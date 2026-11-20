@@ -1,0 +1,59 @@
+name: Build apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npx electron-builder --win --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CoverFlow-Windows-installer
+          path: dist/*.exe
+
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm install
+      - run: npx cap add android
+      - name: Generate Android icons
+        run: npx capacitor-assets generate --android
+        continue-on-error: true
+      - name: Background playback patch (experimental)
+        run: bash android-bg/apply.sh
+        continue-on-error: true
+      - run: npx cap sync android
+      - name: Build debug APK
+        id: build
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+        continue-on-error: true
+      - name: Retry without background patch
+        if: steps.build.outcome == 'failure'
+        run: |
+          bash android-bg/revert.sh
+          cd android
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CoverFlow-Android-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
