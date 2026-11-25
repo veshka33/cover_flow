@@ -2,6 +2,6 @@
 // Чтобы получать доход, впишите свой App ID из portal.start.io и поставьте testing: false (инструкция в README, раздел «Реклама»).
 window.ADS = {
   enabled: true,
-  testing: true,
+  testing: false,
   startioAppId: '210502361'
 };
