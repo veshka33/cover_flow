@@ -1,0 +1,11 @@
+{
+  "appId": "com.coverly.app",
+  "appName": "Coverly",
+  "webDir": "www",
+  "backgroundColor": "#000000",
+  "plugins": {
+    "SystemBars": {
+      "initialViewportFitValueHint": "cover"
+    }
+  }
+}
